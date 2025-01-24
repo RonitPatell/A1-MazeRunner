@@ -16,40 +16,57 @@ public class Main {
 
     private static final Logger logger = LogManager.getLogger();
 
+    @SuppressWarnings("ConvertToTryWithResources")
     public static void main(String[] args) {
         logger.info("Starting Maze Runner");
 
         Options options = new Options();
-        options.addOption("i", "input", true, "Maze input file path");
+        options.addOption("i", true, "Maze input file path");
 
         CommandLineParser parser = new DefaultParser();
+        String inputFile;
         try {
             CommandLine cmd = parser.parse(options, args);
-            if (!cmd.hasOption("i")) {
-                logger.error("Missing -i option for input file");
+            if (cmd.hasOption("i")) {
+                inputFile = cmd.getOptionValue("i");
+            } else {
+                logger.error("Maze couldn't be uploaded");
                 return;
             }
+        } catch (ParseException e) {
+            logger.error("Parsing couldn't be done");
+            return;
+        }
 
-            String inputFile = cmd.getOptionValue("i");
+        try {
             logger.info("Reading the maze from file: {}", inputFile);
-
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    for (int idx = 0; idx < line.length(); idx++) {
-                        if (line.charAt(idx) == '#') {
-                            logger.info("WALL ");
-                        } else if (line.charAt(idx) == ' ') {
-                            logger.info("PASS ");
+            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) {
+                    logger.info("Empty or space-only line detected");
+                    // Handle lines that are empty or filled with spaces
+                    for (int i = 0; i < line.length(); i++) {
+                        if (line.charAt(i) == ' ') {
+                            logger.info("PASS");
                         }
                     }
+                } else {
+                    logger.info("Line read: '{}'", line);
+                    StringBuilder lineOutput = new StringBuilder();
+                    for (char c : line.toCharArray()) {
+                        if (c == '#') {
+                            lineOutput.append("WALL ");
+                        } else if (c == ' ') {
+                            lineOutput.append("PASS ");
+                        }
+                    }
+                    logger.info(lineOutput.toString().trim());
                 }
-            } catch (IOException e) {
-                logger.error("An error has occurred", e);
             }
-        } catch (ParseException e) {
-            logger.error("Failed to parse command line arguments", e);
+            reader.close();
+        } catch (IOException e) {
+            logger.error("An error has occurred while reading the file: " + e.getMessage());
         }
         logger.info("**** Computing path");
         logger.warn("PATH NOT COMPUTED");
