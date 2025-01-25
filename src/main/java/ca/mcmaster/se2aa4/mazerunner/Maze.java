@@ -58,7 +58,7 @@ public class Maze {
             if (grid[row][0] == ' ') {
                 entranceRow = row;
             }
-            if (grid[row][totalCols = 1] == ' ') {
+            if (grid[row][totalCols - 1] == ' ') {
                 exitRow = row;
             }
         }
@@ -67,16 +67,9 @@ public class Maze {
     public void displayMaze() {
         for (int row = 0; row < totalRows; row++) {
             StringBuilder line = new StringBuilder();
-            if (row == entranceRow) {
-                line.append("-> "); 
-            } else {
-                line.append("   ");
-            }
+            line.append("  ");
             for (int col = 0; col < totalCols; col++) {
                 line.append(grid[row][col] == ' ' ? ' ' : '#');
-            }
-            if (row == exitRow) {
-                line.append(" <-");
             }
             logger.info(line.toString());
         }
@@ -100,6 +93,6 @@ public class Maze {
                 break;
             }
         }
-        logger.info(resultPath);
+        logger.info("Path completed: " + resultPath);
     }
 }
