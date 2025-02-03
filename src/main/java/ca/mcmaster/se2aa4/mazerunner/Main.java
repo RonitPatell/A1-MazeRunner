@@ -10,39 +10,48 @@ import org.apache.logging.log4j.Logger;
 
 public class Main {
 
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) {
         logger.info("Starting Maze Runner");
 
         Options options = new Options();
         options.addOption("i", true, "Maze input file path");
+        options.addOption("p", true, "Path sequence for verification");
 
         CommandLineParser parser = new DefaultParser();
-        String inputFile;
+        CommandLine cmd = null;
         try {
-            CommandLine cmd = parser.parse(options, args);
-            if (cmd.hasOption("i")) {
-                inputFile = cmd.getOptionValue("i");
-            } else {
-                logger.error("Maze couldn't be uploaded");
-                return;
-            }
+            cmd = parser.parse(options, args);
         } catch (ParseException e) {
-            logger.error("Parsing couldn't be done");
+            logger.error("Parsing error: " + e.getMessage());
             return;
         }
-        try {
-            logger.info("Reading the maze from file: {}", inputFile);
-            Maze maze = new Maze(inputFile);
-            maze.displayMaze();
-            maze.solveMaze();
-            
-        } catch (Exception e) {
-            logger.error("An error has occurred: " + e.getMessage());
+
+        if (!cmd.hasOption("i")) {
+            logger.error("Maze input file not specified.");
+            return;
         }
-        logger.debug("**** Computing path");
-        logger.debug("PATH NOT COMPUTED");
-        logger.info("** End of MazeRunner");
+
+        String inputFile = cmd.getOptionValue("i");
+        logger.info("Reading the maze from file: " + inputFile);
+        Maze maze = new Maze(inputFile);
+        //maze.displayMaze();
+
+        if (cmd.hasOption("p")) {
+            String pathSequence = cmd.getOptionValue("p");
+            boolean valid = maze.verifyPath(pathSequence);
+            System.out.println(valid ? "correct path" : "incorrect path");
+        } else {
+            String canonicalPath = maze.computePath();
+            if (canonicalPath == null) {
+                System.out.println("PATH NOT COMPUTED");
+            } else {
+                String factoredPath = Maze.factorizePath(canonicalPath);
+                System.out.println(factoredPath);
+            }
+        }
+
+        logger.info("End of MazeRunner");
     }
 }
